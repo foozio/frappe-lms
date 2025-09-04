@@ -8,25 +8,61 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
       - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
+      # Gamification optimizations
+      - --innodb-buffer-pool-size=512M
+      - --max-connections=200
+      - --query-cache-type=1
+      - --query-cache-size=64M
     environment:
-      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-123}
+      MYSQL_DATABASE: lms
     volumes:
       - mariadb-data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 20s
+      retries: 5
 
   frappe:
     image: frappe/bench:latest
     command: bash /workspace/init.sh
     environment:
       - SHELL=/bin/bash
+      # Gamification environment variables
+      - ENABLE_GAMIFICATION=${ENABLE_GAMIFICATION:-1}
+      - POINTS_MULTIPLIER=${POINTS_MULTIPLIER:-1.0}
+      - STREAK_BONUS_POINTS=${STREAK_BONUS_POINTS:-5}
+      # Redis configuration for gamification caching
+      - REDIS_CACHE_URL=redis://redis:6379/0
+      - REDIS_QUEUE_URL=redis://redis:6379/1
+      - REDIS_SOCKETIO_URL=redis://redis:6379/2
     working_dir: /home/frappe
     volumes:
       - .:/workspace
+      - frappe-data:/home/frappe/frappe-bench
     ports:
-      - 8000:8000
-      - 9000:9000
+      - "${WEB_PORT:-8000}:8000"
+      - "${SOCKETIO_PORT:-9000}:9000"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   mariadb-data:
+  redis-data:
+  frappe-data:
