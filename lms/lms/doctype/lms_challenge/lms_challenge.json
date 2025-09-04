@@ -1,0 +1,238 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "description",
+  "challenge_type",
+  "difficulty_level",
+  "column_break_5",
+  "start_date",
+  "end_date",
+  "is_active",
+  "section_break_9",
+  "target_value",
+  "target_unit",
+  "points_reward",
+  "badge_reward",
+  "column_break_14",
+  "max_participants",
+  "current_participants",
+  "is_repeatable",
+  "repeat_frequency",
+  "section_break_19",
+  "eligibility_criteria",
+  "completion_criteria",
+  "section_break_22",
+  "image",
+  "instructions",
+  "section_break_25",
+  "created_by",
+  "creation_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Challenge Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "challenge_type",
+   "fieldtype": "Select",
+   "label": "Challenge Type",
+   "options": "Individual\nGroup\nCommunity\nDaily\nWeekly\nMonthly",
+   "reqd": 1
+  },
+  {
+   "fieldname": "difficulty_level",
+   "fieldtype": "Select",
+   "label": "Difficulty Level",
+   "options": "Beginner\nIntermediate\nAdvanced\nExpert",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "1"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Challenge Details"
+  },
+  {
+   "fieldname": "target_value",
+   "fieldtype": "Int",
+   "label": "Target Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "target_unit",
+   "fieldtype": "Data",
+   "label": "Target Unit",
+   "description": "e.g., lessons, courses, points, hours"
+  },
+  {
+   "fieldname": "points_reward",
+   "fieldtype": "Int",
+   "label": "Points Reward",
+   "default": "0"
+  },
+  {
+   "fieldname": "badge_reward",
+   "fieldtype": "Link",
+   "label": "Badge Reward",
+   "options": "LMS Badge"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_participants",
+   "fieldtype": "Int",
+   "label": "Max Participants",
+   "default": "0",
+   "description": "0 for unlimited"
+  },
+  {
+   "fieldname": "current_participants",
+   "fieldtype": "Int",
+   "label": "Current Participants",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "is_repeatable",
+   "fieldtype": "Check",
+   "label": "Is Repeatable",
+   "default": "0"
+  },
+  {
+   "fieldname": "repeat_frequency",
+   "fieldtype": "Select",
+   "label": "Repeat Frequency",
+   "options": "Daily\nWeekly\nMonthly\nQuarterly",
+   "depends_on": "is_repeatable"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break",
+   "label": "Criteria"
+  },
+  {
+   "fieldname": "eligibility_criteria",
+   "fieldtype": "Code",
+   "label": "Eligibility Criteria (JSON)",
+   "description": "JSON object defining who can participate",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "completion_criteria",
+   "fieldtype": "Code",
+   "label": "Completion Criteria (JSON)",
+   "description": "JSON object defining completion conditions",
+   "options": "JSON",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_22",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Challenge Image"
+  },
+  {
+   "fieldname": "instructions",
+   "fieldtype": "Text Editor",
+   "label": "Instructions"
+  },
+  {
+   "fieldname": "section_break_25",
+   "fieldtype": "Section Break",
+   "label": "System Information"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "creation_date",
+   "fieldtype": "Datetime",
+   "label": "Creation Date",
+   "read_only": 1,
+   "default": "now"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS Challenge",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "LMS Moderator",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "LMS Student"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:LB-{user}-{leaderboard_type}-{####}",
+ "creation": "2024-01-15 10:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "leaderboard_type",
+  "category",
+  "column_break_4",
+  "score",
+  "rank_position",
+  "previous_rank",
+  "section_break_8",
+  "period_type",
+  "period_start",
+  "period_end",
+  "column_break_12",
+  "is_active",
+  "last_updated",
+  "section_break_15",
+  "additional_data",
+  "achievements"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "leaderboard_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Leaderboard Type",
+   "options": "Points\nCourse Completion\nStreak\nChallenge\nBadges\nActivity\nEngagement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category",
+   "description": "Optional category for filtering (e.g., course subject, difficulty level)"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Score",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rank_position",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rank Position",
+   "reqd": 1
+  },
+  {
+   "fieldname": "previous_rank",
+   "fieldtype": "Int",
+   "label": "Previous Rank",
+   "description": "Previous rank position for tracking changes"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break",
+   "label": "Period Information"
+  },
+  {
+   "fieldname": "period_type",
+   "fieldtype": "Select",
+   "label": "Period Type",
+   "options": "All Time\nDaily\nWeekly\nMonthly\nQuarterly\nYearly",
+   "default": "All Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "period_start",
+   "fieldtype": "Datetime",
+   "label": "Period Start"
+  },
+  {
+   "fieldname": "period_end",
+   "fieldtype": "Datetime",
+   "label": "Period End"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": 1
+  },
+  {
+   "fieldname": "last_updated",
+   "fieldtype": "Datetime",
+   "label": "Last Updated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "additional_data",
+   "fieldtype": "JSON",
+   "label": "Additional Data",
+   "description": "JSON field for storing additional leaderboard-specific data"
+  },
+  {
+   "fieldname": "achievements",
+   "fieldtype": "Text",
+   "label": "Achievements",
+   "description": "Comma-separated list of achievements or badges"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS Leaderboard Entry",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "LMS Moderator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "LMS Student",
+   "share": 1
+  }
+ ],
+ "sort_field": "rank_position",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,166 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "challenge",
+  "user",
+  "status",
+  "column_break_5",
+  "join_date",
+  "completion_date",
+  "progress_percentage",
+  "section_break_9",
+  "current_progress",
+  "notes",
+  "section_break_12",
+  "points_earned",
+  "badges_earned",
+  "rank_position"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LMS-CP-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "challenge",
+   "fieldtype": "Link",
+   "label": "Challenge",
+   "options": "LMS Challenge",
+   "reqd": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nCompleted\nAbandoned\nExpired",
+   "reqd": 1,
+   "default": "Active"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "join_date",
+   "fieldtype": "Datetime",
+   "label": "Join Date",
+   "reqd": 1,
+   "default": "now"
+  },
+  {
+   "fieldname": "completion_date",
+   "fieldtype": "Datetime",
+   "label": "Completion Date",
+   "depends_on": "eval:doc.status == 'Completed'"
+  },
+  {
+   "fieldname": "progress_percentage",
+   "fieldtype": "Percent",
+   "label": "Progress Percentage",
+   "default": "0"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Progress Details"
+  },
+  {
+   "fieldname": "current_progress",
+   "fieldtype": "Code",
+   "label": "Current Progress (JSON)",
+   "description": "JSON object tracking detailed progress metrics",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break",
+   "label": "Rewards & Ranking"
+  },
+  {
+   "fieldname": "points_earned",
+   "fieldtype": "Int",
+   "label": "Points Earned",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "badges_earned",
+   "fieldtype": "Text",
+   "label": "Badges Earned",
+   "description": "Comma-separated list of badges earned from this challenge",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rank_position",
+   "fieldtype": "Int",
+   "label": "Rank Position",
+   "description": "Current rank in challenge leaderboard",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS Challenge Participation",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "LMS Moderator",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "LMS Student",
+   "if_owner": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "unique_constraints": [
+  {
+   "fields": ["challenge", "user"],
+   "constraint_name": "unique_challenge_user"
+  }
+ ]
+}

@@ -1,0 +1,200 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:STR-{user}-{####}",
+ "creation": "2024-01-15 10:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "streak_type",
+  "column_break_3",
+  "current_streak",
+  "longest_streak",
+  "total_days",
+  "section_break_7",
+  "last_activity_date",
+  "streak_start_date",
+  "longest_streak_start",
+  "column_break_11",
+  "is_active",
+  "freeze_used_today",
+  "freeze_count",
+  "section_break_15",
+  "streak_activities",
+  "milestones_achieved",
+  "section_break_18",
+  "activity_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "streak_type",
+   "fieldtype": "Select",
+   "label": "Streak Type",
+   "options": "Daily Learning\nCourse Completion\nLesson Completion\nQuiz Participation\nGeneral Activity",
+   "default": "Daily Learning",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_streak",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Current Streak",
+   "default": "0",
+   "reqd": 1
+  },
+  {
+   "fieldname": "longest_streak",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Longest Streak",
+   "default": "0",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_days",
+   "fieldtype": "Int",
+   "label": "Total Active Days",
+   "default": "0",
+   "description": "Total number of days user has been active"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break",
+   "label": "Streak Dates"
+  },
+  {
+   "fieldname": "last_activity_date",
+   "fieldtype": "Date",
+   "label": "Last Activity Date",
+   "description": "Date of last recorded activity"
+  },
+  {
+   "fieldname": "streak_start_date",
+   "fieldtype": "Date",
+   "label": "Current Streak Start Date",
+   "description": "Date when current streak started"
+  },
+  {
+   "fieldname": "longest_streak_start",
+   "fieldtype": "Date",
+   "label": "Longest Streak Start Date",
+   "description": "Date when longest streak started"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": 1,
+   "description": "Whether the streak is currently active"
+  },
+  {
+   "fieldname": "freeze_used_today",
+   "fieldtype": "Check",
+   "label": "Freeze Used Today",
+   "default": 0,
+   "description": "Whether streak freeze was used today"
+  },
+  {
+   "fieldname": "freeze_count",
+   "fieldtype": "Int",
+   "label": "Available Freezes",
+   "default": "3",
+   "description": "Number of streak freezes available"
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break",
+   "label": "Streak Details"
+  },
+  {
+   "fieldname": "streak_activities",
+   "fieldtype": "JSON",
+   "label": "Streak Activities",
+   "description": "JSON field storing activities that count towards streak"
+  },
+  {
+   "fieldname": "milestones_achieved",
+   "fieldtype": "Text",
+   "label": "Milestones Achieved",
+   "description": "Comma-separated list of streak milestones achieved"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break",
+   "label": "Activity Log"
+  },
+  {
+   "fieldname": "activity_log",
+   "fieldtype": "JSON",
+   "label": "Activity Log",
+   "description": "JSON field storing daily activity log for streak tracking"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS Streak Record",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "LMS Moderator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "LMS Student",
+   "share": 1
+  }
+ ],
+ "sort_field": "current_streak",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

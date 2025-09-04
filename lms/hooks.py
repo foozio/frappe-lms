@@ -107,6 +107,25 @@ doc_events = {
 		"validate": "lms.lms.user.validate_username_duplicates",
 		"after_insert": "lms.lms.user.after_insert",
 	},
+	# Gamification Events
+	"LMS Course Progress": {
+		"on_update": "lms.lms.gamification.award_points_for_progress",
+	},
+	"LMS Quiz Submission": {
+		"on_submit": "lms.lms.gamification.award_points_for_quiz",
+	},
+	"LMS Assignment Submission": {
+		"on_submit": "lms.lms.gamification.award_points_for_assignment",
+	},
+	"Discussion Topic": {
+		"after_insert": "lms.lms.gamification.award_points_for_discussion",
+	},
+	"Discussion Reply": {
+		"after_insert": [
+			"lms.lms.utils.handle_notifications",
+			"lms.lms.gamification.award_points_for_reply"
+		]
+	},
 }
 
 # Scheduled Tasks
@@ -117,12 +136,28 @@ scheduler_events = {
 		"lms.lms.api.update_course_statistics",
 		"lms.lms.doctype.lms_certificate_request.lms_certificate_request.mark_eval_as_completed",
 		"lms.lms.doctype.lms_live_class.lms_live_class.update_attendance",
+		# Gamification Tasks
+		"lms.lms.gamification.update_leaderboards",
 	],
 	"daily": [
 		"lms.job.doctype.job_opportunity.job_opportunity.update_job_openings",
 		"lms.lms.doctype.lms_payment.lms_payment.send_payment_reminder",
 		"lms.lms.doctype.lms_batch.lms_batch.send_batch_start_reminder",
 		"lms.lms.doctype.lms_live_class.lms_live_class.send_live_class_reminder",
+		# Gamification Tasks
+		"lms.lms.gamification.update_daily_streaks",
+		"lms.lms.gamification.process_daily_challenges",
+		"lms.lms.gamification.cleanup_expired_challenges",
+	],
+	"weekly": [
+		# Gamification Tasks
+		"lms.lms.gamification.process_weekly_challenges",
+		"lms.lms.gamification.generate_weekly_leaderboard_summary",
+	],
+	"monthly": [
+		# Gamification Tasks
+		"lms.lms.gamification.process_monthly_challenges",
+		"lms.lms.gamification.generate_monthly_achievements_report",
 	],
 }
 

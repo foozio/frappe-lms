@@ -1624,3 +1624,356 @@ def get_progress_distribution(progressList):
 	]
 
 	return distribution
+
+
+# ============================================================================
+# GAMIFICATION API ENDPOINTS
+# ============================================================================
+
+@frappe.whitelist()
+def get_user_gamification_stats(user=None):
+	"""Get comprehensive gamification statistics for a user"""
+	if not user:
+		user = frappe.session.user
+	
+	# Get user document with gamification fields
+	user_doc = frappe.get_doc("User", user)
+	
+	# Get recent points transactions
+	recent_transactions = frappe.get_all(
+		"LMS Points Transaction",
+		filters={"user": user, "docstatus": 1},
+		fields=["name", "points", "transaction_type", "activity_type", "description", "transaction_date"],
+		order_by="transaction_date desc",
+		limit=10
+	)
+	
+	# Get active challenges
+	active_challenges = frappe.get_all(
+		"LMS Challenge Participation",
+		filters={"user": user, "status": "Active"},
+		fields=["challenge", "progress", "start_date", "target_date"],
+		order_by="start_date desc"
+	)
+	
+	# Get streak information
+	streak_record = frappe.db.get_value(
+		"LMS Streak Record",
+		{"user": user, "streak_type": "Daily Learning"},
+		["current_streak", "longest_streak", "last_activity_date", "is_active"],
+		as_dict=True
+	)
+	
+	return {
+		"user": user,
+		"total_points": user_doc.get("total_points", 0),
+		"available_points": user_doc.get("available_points", 0),
+		"current_streak": user_doc.get("current_streak", 0),
+		"longest_streak": user_doc.get("longest_streak", 0),
+		"total_badges": user_doc.get("total_badges", 0),
+		"user_level": user_doc.get("user_level", 0),
+		"challenges_completed": user_doc.get("challenges_completed", 0),
+		"recent_transactions": recent_transactions,
+		"active_challenges": active_challenges,
+		"streak_info": streak_record or {}
+	}
+
+
+@frappe.whitelist()
+def get_leaderboard(leaderboard_type="Points", period_type="All Time", category=None, limit=50):
+	"""Get leaderboard data based on type and period"""
+	from lms.lms.doctype.lms_leaderboard_entry.lms_leaderboard_entry import get_leaderboard
+	
+	return get_leaderboard(
+		leaderboard_type=leaderboard_type,
+		period_type=period_type,
+		category=category,
+		limit=limit
+	)
+
+
+@frappe.whitelist()
+def get_user_leaderboard_position(user=None, leaderboard_type="Points", period_type="All Time"):
+	"""Get user's position in a specific leaderboard"""
+	if not user:
+		user = frappe.session.user
+	
+	from lms.lms.doctype.lms_leaderboard_entry.lms_leaderboard_entry import get_user_position
+	
+	return get_user_position(
+		user=user,
+		leaderboard_type=leaderboard_type,
+		period_type=period_type
+	)
+
+
+@frappe.whitelist()
+def get_available_challenges(status="Active", challenge_type=None):
+	"""Get list of available challenges"""
+	filters = {"status": status}
+	if challenge_type:
+		filters["challenge_type"] = challenge_type
+	
+	challenges = frappe.get_all(
+		"LMS Challenge",
+		filters=filters,
+		fields=[
+			"name", "title", "description", "challenge_type", "difficulty_level",
+			"points_reward", "badge_reward", "start_date", "end_date",
+			"max_participants", "current_participants", "requirements"
+		],
+		order_by="start_date desc"
+	)
+	
+	# Add participation status for current user
+	for challenge in challenges:
+		participation = frappe.db.get_value(
+			"LMS Challenge Participation",
+			{"challenge": challenge.name, "user": frappe.session.user},
+			["status", "progress", "completion_date"],
+			as_dict=True
+		)
+		challenge["user_participation"] = participation or {"status": "Not Joined"}
+	
+	return challenges
+
+
+@frappe.whitelist()
+def join_challenge(challenge_name):
+	"""Join a challenge"""
+	from lms.lms.doctype.lms_challenge.lms_challenge import join_challenge
+	
+	try:
+		result = join_challenge(challenge_name, frappe.session.user)
+		return {"success": True, "message": "Successfully joined the challenge!", "data": result}
+	except Exception as e:
+		return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def update_challenge_progress(challenge_name, progress_data):
+	"""Update progress for a challenge participation"""
+	from lms.lms.doctype.lms_challenge_participation.lms_challenge_participation import update_progress
+	
+	try:
+		participation = frappe.get_value(
+			"LMS Challenge Participation",
+			{"challenge": challenge_name, "user": frappe.session.user},
+			"name"
+		)
+		
+		if not participation:
+			return {"success": False, "message": "You are not participating in this challenge"}
+		
+		result = update_progress(participation, progress_data)
+		return {"success": True, "message": "Progress updated successfully!", "data": result}
+	except Exception as e:
+		return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def get_user_challenges(user=None, status=None):
+	"""Get challenges for a specific user"""
+	if not user:
+		user = frappe.session.user
+	
+	filters = {"user": user}
+	if status:
+		filters["status"] = status
+	
+	participations = frappe.get_all(
+		"LMS Challenge Participation",
+		filters=filters,
+		fields=[
+			"name", "challenge", "status", "progress", "start_date",
+			"target_date", "completion_date", "points_earned", "badge_earned"
+		],
+		order_by="start_date desc"
+	)
+	
+	# Get challenge details
+	for participation in participations:
+		challenge_details = frappe.get_value(
+			"LMS Challenge",
+			participation.challenge,
+			["title", "description", "challenge_type", "difficulty_level"],
+			as_dict=True
+		)
+		participation.update(challenge_details or {})
+	
+	return participations
+
+
+@frappe.whitelist()
+def record_learning_activity(activity_type, activity_data=None):
+	"""Record a learning activity for points and streak tracking"""
+	from lms.lms.doctype.lms_points_transaction.lms_points_transaction import award_points
+	from lms.lms.doctype.lms_streak_record.lms_streak_record import record_activity
+	
+	try:
+		# Award points for the activity
+		points_result = award_points(
+			user=frappe.session.user,
+			activity_type=activity_type,
+			activity_data=activity_data
+		)
+		
+		# Update streak record
+		streak_result = record_activity(
+			user=frappe.session.user,
+			activity_type=activity_type,
+			activity_data=activity_data
+		)
+		
+		return {
+			"success": True,
+			"message": "Activity recorded successfully!",
+			"points_awarded": points_result.get("points", 0),
+			"streak_updated": streak_result.get("current_streak", 0)
+		}
+	except Exception as e:
+		return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def get_streak_calendar(user=None, year=None, month=None):
+	"""Get streak calendar data for visualization"""
+	if not user:
+		user = frappe.session.user
+	
+	from lms.lms.doctype.lms_streak_record.lms_streak_record import get_activity_calendar
+	
+	return get_activity_calendar(user=user, year=year, month=month)
+
+
+@frappe.whitelist()
+def use_streak_freeze(user=None):
+	"""Use a streak freeze to protect current streak"""
+	if not user:
+		user = frappe.session.user
+	
+	from lms.lms.doctype.lms_streak_record.lms_streak_record import use_freeze
+	
+	try:
+		result = use_freeze(user)
+		return {"success": True, "message": "Streak freeze applied!", "data": result}
+	except Exception as e:
+		return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def get_points_history(user=None, limit=50, transaction_type=None):
+	"""Get detailed points transaction history"""
+	if not user:
+		user = frappe.session.user
+	
+	filters = {"user": user, "docstatus": 1}
+	if transaction_type:
+		filters["transaction_type"] = transaction_type
+	
+	transactions = frappe.get_all(
+		"LMS Points Transaction",
+		filters=filters,
+		fields=[
+			"name", "points", "transaction_type", "activity_type", "description",
+			"transaction_date", "reference_doctype", "reference_name", "additional_data"
+		],
+		order_by="transaction_date desc",
+		limit=limit
+	)
+	
+	return transactions
+
+
+@frappe.whitelist()
+def get_badge_collection(user=None):
+	"""Get user's badge collection"""
+	if not user:
+		user = frappe.session.user
+	
+	# Get badges from points transactions
+	badge_transactions = frappe.get_all(
+		"LMS Points Transaction",
+		filters={
+			"user": user,
+			"docstatus": 1,
+			"badge_awarded": ["is", "set"]
+		},
+		fields=["badge_awarded", "transaction_date", "description"],
+		order_by="transaction_date desc"
+	)
+	
+	# Get badges from challenge completions
+	challenge_badges = frappe.get_all(
+		"LMS Challenge Participation",
+		filters={
+			"user": user,
+			"status": "Completed",
+			"badge_earned": ["is", "set"]
+		},
+		fields=["badge_earned", "completion_date", "challenge"],
+		order_by="completion_date desc"
+	)
+	
+	# Combine and format badges
+	badges = []
+	for transaction in badge_transactions:
+		badges.append({
+			"badge_name": transaction.badge_awarded,
+			"earned_date": transaction.transaction_date,
+			"source": "Points Activity",
+			"description": transaction.description
+		})
+	
+	for challenge in challenge_badges:
+		badges.append({
+			"badge_name": challenge.badge_earned,
+			"earned_date": challenge.completion_date,
+			"source": "Challenge Completion",
+			"description": f"Earned from challenge: {challenge.challenge}"
+		})
+	
+	# Sort by earned date
+	badges.sort(key=lambda x: x["earned_date"], reverse=True)
+	
+	return badges
+
+
+@frappe.whitelist()
+def get_gamification_summary():
+	"""Get overall gamification system summary and statistics"""
+	# Get total statistics
+	total_users = frappe.db.count("User", {"enabled": 1, "user_type": "System User"})
+	total_points_awarded = frappe.db.sql(
+		"""SELECT SUM(points) FROM `tabLMS Points Transaction` 
+		   WHERE docstatus = 1 AND transaction_type = 'Earned'"""
+	)[0][0] or 0
+	
+	active_challenges = frappe.db.count("LMS Challenge", {"status": "Active"})
+	active_streaks = frappe.db.count("LMS Streak Record", {"is_active": 1})
+	
+	# Get top performers
+	top_points = frappe.get_all(
+		"User",
+		filters={"enabled": 1, "user_type": "System User"},
+		fields=["name", "full_name", "total_points"],
+		order_by="total_points desc",
+		limit=10
+	)
+	
+	top_streaks = frappe.get_all(
+		"User",
+		filters={"enabled": 1, "user_type": "System User"},
+		fields=["name", "full_name", "current_streak"],
+		order_by="current_streak desc",
+		limit=10
+	)
+	
+	return {
+		"total_users": total_users,
+		"total_points_awarded": total_points_awarded,
+		"active_challenges": active_challenges,
+		"active_streaks": active_streaks,
+		"top_points_earners": top_points,
+		"top_streak_holders": top_streaks
+	}

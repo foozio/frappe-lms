@@ -239,6 +239,26 @@ const routes = [
 			),
 		props: true,
 	},
+	{
+		path: '/leaderboard',
+		name: 'Leaderboard',
+		component: () => import('@/pages/Leaderboard.vue'),
+	},
+	{
+		path: '/points-dashboard',
+		name: 'PointsDashboard',
+		component: () => import('@/pages/PointsDashboard.vue'),
+	},
+	{
+		path: '/challenges',
+		name: 'ChallengesHub',
+		component: () => import('@/pages/ChallengesHub.vue'),
+	},
+	{
+		path: '/streak-tracker',
+		name: 'StreakTracker',
+		component: () => import('@/pages/StreakTracker.vue'),
+	},
 ]
 
 let router = createRouter({
