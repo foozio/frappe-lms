@@ -268,6 +268,38 @@ def join_challenge(challenge_name, user=None):
 		frappe.log_error(f"Error joining challenge: {str(e)}")
 		return {"success": False, "message": "Failed to join challenge"}
 
+
+@frappe.whitelist()
+def leave_challenge(challenge_name, user=None):
+	"""Leave a challenge (set participation inactive/cancelled)."""
+	if not user:
+		user = frappe.session.user
+
+	try:
+		participation_name = frappe.db.get_value(
+			"LMS Challenge Participation",
+			{"challenge": challenge_name, "user": user, "status": ["in", ["Active", "Completed"]]},
+			"name",
+		)
+		if not participation_name:
+			return {"success": False, "message": "No active participation found"}
+
+		participation_doc = frappe.get_doc("LMS Challenge Participation", participation_name)
+		if participation_doc.status != "Completed":
+			participation_doc.status = "Cancelled"
+			participation_doc.save(ignore_permissions=True)
+
+		# Decrement challenge participants safely
+		challenge = frappe.get_doc("LMS Challenge", challenge_name)
+		if cint(challenge.current_participants or 0) > 0:
+			challenge.current_participants = cint(challenge.current_participants) - 1
+			challenge.save(ignore_permissions=True)
+
+		return {"success": True, "message": "Left challenge"}
+	except Exception as e:
+		frappe.log_error(f"Error leaving challenge: {str(e)}")
+		return {"success": False, "message": "Failed to leave challenge"}
+
 @frappe.whitelist()
 def get_challenge_leaderboard(challenge_name, limit=10):
 	"""Get leaderboard for a specific challenge"""
@@ -377,3 +409,41 @@ def calculate_challenge_progress(user, challenge):
 	
 	except:
 		return 0
+
+
+@frappe.whitelist()
+def get_user_challenges(user=None, status="Active"):
+	"""Return challenges the user is participating in, filtered by status."""
+	if not user:
+		user = frappe.session.user
+
+	valid_status = ["Active", "Completed", "Cancelled"]
+	if status not in valid_status:
+		status = "Active"
+
+	participations = frappe.get_all(
+		"LMS Challenge Participation",
+		filters={"user": user, "status": status},
+		fields=["name", "challenge", "status", "progress_percentage", "completion_date", "join_date"],
+		order_by="join_date desc",
+	)
+
+	# Attach challenge details
+	for p in participations:
+		ch = frappe.db.get_value(
+			"LMS Challenge",
+			p.challenge,
+			["title", "description", "challenge_type", "start_date", "end_date", "points_reward", "badge_reward", "image"],
+			as_dict=True,
+		)
+		p.update({
+			"challenge_title": ch.title if ch else None,
+			"challenge_type": ch.challenge_type if ch else None,
+			"start_date": ch.start_date if ch else None,
+			"end_date": ch.end_date if ch else None,
+			"points_reward": ch.points_reward if ch else 0,
+			"badge_reward": ch.badge_reward if ch else None,
+			"image": ch.image if ch else None,
+		})
+
+	return participations

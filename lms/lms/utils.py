@@ -27,6 +27,7 @@ from frappe.utils import (
 	pretty_date,
 )
 from frappe.utils.dateutils import get_period
+from frappe.utils import now_datetime
 
 from lms.lms.md import find_macros, markdown_to_html
 
@@ -2120,3 +2121,111 @@ def get_related_courses(course):
 
 def persona_captured():
 	frappe.db.set_single_value("LMS Settings", "persona_captured", 1)
+
+
+# --- Gamification / Leaderboard Utilities ---
+
+def _get_user_total_points(user: str) -> int:
+	"""Return user's total points from User doctype (fallbacks to 0)."""
+	user_doc = frappe.get_doc("User", user)
+	return cint(user_doc.get("total_points") or 0)
+
+
+def _get_user_current_streak(user: str) -> int:
+	"""Return user's current streak from User doctype (fallbacks to 0)."""
+	user_doc = frappe.get_doc("User", user)
+	return cint(user_doc.get("current_streak") or 0)
+
+
+def _get_user_course_points(user: str, course: str) -> int:
+	"""Best-effort course points using transactions tied to the course.
+
+	This sums points where reference_doctype/name match the course document.
+	If no transactions are found, returns 0.
+	"""
+	if not course:
+		return 0
+
+	res = frappe.db.sql(
+		"""
+		SELECT COALESCE(SUM(points * COALESCE(multiplier, 1)), 0)
+		FROM `tabLMS Points Transaction`
+		WHERE user = %s
+		  AND docstatus = 1
+		  AND transaction_type IN ('Earned','Bonus')
+		  AND (
+			(reference_doctype = 'LMS Course' AND reference_doc = %s)
+			OR reference_doc = %s
+		  )
+		""",
+		(user, course, course),
+	)
+	return cint(res[0][0]) if res and res[0] and res[0][0] is not None else 0
+
+
+def update_user_leaderboard_position(user: str, leaderboard_type: str = "global", reference_doc: str | None = None, period_type: str = "All Time") -> None:
+	"""Create/update an `LMS Leaderboard Entry` for the user and recalc ranks.
+
+	- leaderboard_type: one of 'global', 'course', 'streak'
+	- reference_doc: used for 'course' to scope the entry
+	- period_type: currently defaults to 'All Time'
+	"""
+	if leaderboard_type == "global":
+		score = _get_user_total_points(user)
+	elif leaderboard_type == "streak":
+		score = _get_user_current_streak(user)
+	elif leaderboard_type == "course":
+		score = _get_user_course_points(user, reference_doc)
+	else:
+		return
+
+	filters = {
+		"user": user,
+		"leaderboard_type": leaderboard_type,
+		"period_type": period_type,
+	}
+	if leaderboard_type == "course" and reference_doc:
+		filters["reference_doc"] = reference_doc
+
+	entry_name = frappe.db.get_value("LMS Leaderboard Entry", filters, "name")
+	if entry_name:
+		frappe.db.set_value("LMS Leaderboard Entry", entry_name, {
+			"score": score,
+			"last_updated": now_datetime(),
+			"is_active": 1,
+		})
+	else:
+		entry = frappe.get_doc({
+			"doctype": "LMS Leaderboard Entry",
+			"user": user,
+			"leaderboard_type": leaderboard_type,
+			"period_type": period_type,
+			"reference_doc": reference_doc if leaderboard_type == "course" else None,
+			"score": score,
+			"rank_position": 0,
+			"is_active": 1,
+			"last_updated": now_datetime(),
+		})
+		entry.insert(ignore_permissions=True)
+
+	recalculate_leaderboard_rankings(leaderboard_type=leaderboard_type, reference_doc=reference_doc, period_type=period_type)
+
+
+def recalculate_leaderboard_rankings(leaderboard_type: str = "global", reference_doc: str | None = None, period_type: str = "All Time") -> None:
+	"""Recompute `rank_position` for entries matching the filters by score desc."""
+	filters = {"leaderboard_type": leaderboard_type, "period_type": period_type, "is_active": 1}
+	if leaderboard_type == "course" and reference_doc:
+		filters["reference_doc"] = reference_doc
+
+	entries = frappe.get_all(
+		"LMS Leaderboard Entry",
+		filters=filters,
+		fields=["name", "score"],
+		order_by="score desc, name asc",
+	)
+
+	for idx, entry in enumerate(entries, start=1):
+		frappe.db.set_value("LMS Leaderboard Entry", entry["name"], {
+			"rank_position": idx,
+			"last_updated": now_datetime(),
+		})

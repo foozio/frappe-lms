@@ -39,6 +39,10 @@
   "certified_participants",
   "certified_members",
   "programming_exercises",
+  "leaderboard",
+  "points",
+  "challenges",
+  "streaks",
   "column_break_exdz",
   "jobs",
   "statistics",
@@ -288,6 +292,30 @@
    "fieldname": "jobs",
    "fieldtype": "Check",
    "label": "Jobs"
+  },
+  {
+   "default": "1",
+   "fieldname": "leaderboard",
+   "fieldtype": "Check",
+   "label": "Leaderboard"
+  },
+  {
+   "default": "1",
+   "fieldname": "points",
+   "fieldtype": "Check",
+   "label": "Points"
+  },
+  {
+   "default": "1",
+   "fieldname": "challenges",
+   "fieldtype": "Check",
+   "label": "Challenges"
+  },
+  {
+   "default": "1",
+   "fieldname": "streaks",
+   "fieldtype": "Check",
+   "label": "Streaks"
   },
   {
    "default": "1",

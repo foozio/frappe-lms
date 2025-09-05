@@ -501,15 +501,20 @@ def get_sidebar_settings():
 	lms_settings = frappe.get_single("LMS Settings")
 	sidebar_items = frappe._dict()
 
-	items = [
-		"courses",
-		"batches",
-		"certified_members",
-		"jobs",
-		"statistics",
-		"notifications",
-		"programming_exercises",
-	]
+    items = [
+        "courses",
+        "batches",
+        "certified_members",
+        "jobs",
+        "statistics",
+        "notifications",
+        "programming_exercises",
+        # Gamification toggles
+        "leaderboard",
+        "points",
+        "challenges",
+        "streaks",
+    ]
 	for item in items:
 		sidebar_items[item] = lms_settings.get(item)
 
@@ -1837,28 +1842,31 @@ def record_learning_activity(activity_type, activity_data=None):
 
 @frappe.whitelist()
 def get_streak_calendar(user=None, year=None, month=None):
-	"""Get streak calendar data for visualization"""
-	if not user:
-		user = frappe.session.user
-	
-	from lms.lms.doctype.lms_streak_record.lms_streak_record import get_activity_calendar
-	
-	return get_activity_calendar(user=user, year=year, month=month)
+    """Get streak calendar data for visualization"""
+    if not user:
+        user = frappe.session.user
+    
+    # Align with current streak record API
+    from lms.lms.doctype.lms_streak_record.lms_streak_record import get_user_activity_calendar
+    
+    # When month/year are provided, return a 1-month window
+    months = 1 if (year and month) else 3
+    return get_user_activity_calendar(user=user, months=months)
 
 
 @frappe.whitelist()
 def use_streak_freeze(user=None):
-	"""Use a streak freeze to protect current streak"""
-	if not user:
-		user = frappe.session.user
-	
-	from lms.lms.doctype.lms_streak_record.lms_streak_record import use_freeze
-	
-	try:
-		result = use_freeze(user)
-		return {"success": True, "message": "Streak freeze applied!", "data": result}
-	except Exception as e:
-		return {"success": False, "message": str(e)}
+    """Use a streak freeze to protect current streak"""
+    if not user:
+        user = frappe.session.user
+    
+    from lms.lms.doctype.lms_streak_record.lms_streak_record import use_streak_freeze as _use_streak_freeze
+    
+    try:
+        result = _use_streak_freeze(user)
+        return {"success": True, "message": "Streak freeze applied!", "data": result}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
 
 
 @frappe.whitelist()

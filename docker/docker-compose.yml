@@ -2,7 +2,7 @@ version: "3.7"
 name: lms
 services:
   mariadb:
-    image: mariadb:10.8
+    image: mariadb:12.0.2
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -37,13 +37,16 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    command: bash /workspace/init.sh
+    command: bash /workspace/init-gamification.sh
     environment:
       - SHELL=/bin/bash
       # Gamification environment variables
       - ENABLE_GAMIFICATION=${ENABLE_GAMIFICATION:-1}
       - POINTS_MULTIPLIER=${POINTS_MULTIPLIER:-1.0}
       - STREAK_BONUS_POINTS=${STREAK_BONUS_POINTS:-5}
+      - SITE_NAME=${SITE_NAME:-lms.localhost}
+      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-123}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       # Redis configuration for gamification caching
       - REDIS_CACHE_URL=redis://redis:6379/0
       - REDIS_QUEUE_URL=redis://redis:6379/1
@@ -51,6 +54,7 @@ services:
     working_dir: /home/frappe
     volumes:
       - .:/workspace
+      - ../:/workspace/lms
       - frappe-data:/home/frappe/frappe-bench
     ports:
       - "${WEB_PORT:-8000}:8000"

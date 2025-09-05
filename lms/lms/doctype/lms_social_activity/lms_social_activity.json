@@ -95,7 +95,7 @@
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Social Activity",
- "naming_rule": "By "Naming Series" field",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

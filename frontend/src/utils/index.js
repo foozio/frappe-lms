@@ -402,44 +402,69 @@ export function getUserTimezone() {
 }
 
 export function getSidebarLinks() {
-	return [
-		{
-			label: 'Courses',
-			icon: 'BookOpen',
-			to: 'Courses',
-			activeFor: [
-				'Courses',
-				'CourseDetail',
-				'Lesson',
-				'CourseForm',
-				'LessonForm',
-			],
-		},
-		{
-			label: 'Batches',
-			icon: 'Users',
-			to: 'Batches',
-			activeFor: ['Batches', 'BatchDetail', 'Batch', 'BatchForm'],
-		},
-		{
-			label: 'Certified Members',
-			icon: 'GraduationCap',
-			to: 'CertifiedParticipants',
-			activeFor: ['CertifiedParticipants'],
-		},
-		{
-			label: 'Jobs',
-			icon: 'Briefcase',
-			to: 'Jobs',
-			activeFor: ['Jobs', 'JobDetail'],
-		},
-		{
-			label: 'Statistics',
-			icon: 'TrendingUp',
-			to: 'Statistics',
-			activeFor: ['Statistics'],
-		},
-	]
+    return [
+        {
+            label: 'Courses',
+            icon: 'BookOpen',
+            to: 'Courses',
+            activeFor: [
+                'Courses',
+                'CourseDetail',
+                'Lesson',
+                'CourseForm',
+                'LessonForm',
+            ],
+        },
+        {
+            label: 'Batches',
+            icon: 'Users',
+            to: 'Batches',
+            activeFor: ['Batches', 'BatchDetail', 'Batch', 'BatchForm'],
+        },
+        {
+            label: 'Certified Members',
+            icon: 'GraduationCap',
+            to: 'CertifiedParticipants',
+            activeFor: ['CertifiedParticipants'],
+        },
+        {
+            label: 'Jobs',
+            icon: 'Briefcase',
+            to: 'Jobs',
+            activeFor: ['Jobs', 'JobDetail'],
+        },
+        {
+            label: 'Statistics',
+            icon: 'TrendingUp',
+            to: 'Statistics',
+            activeFor: ['Statistics'],
+        },
+        // Gamification
+        {
+            label: 'Leaderboard',
+            icon: 'Trophy',
+            to: 'Leaderboard',
+            activeFor: ['Leaderboard'],
+        },
+        {
+            label: 'Points',
+            icon: 'Coins',
+            to: 'PointsDashboard',
+            activeFor: ['PointsDashboard'],
+        },
+        {
+            label: 'Challenges',
+            icon: 'Flag',
+            to: 'ChallengesHub',
+            activeFor: ['ChallengesHub'],
+        },
+        {
+            label: 'Streaks',
+            icon: 'Flame',
+            to: 'StreakTracker',
+            activeFor: ['StreakTracker'],
+        },
+    ]
 }
 
 export function getFormattedDateRange(

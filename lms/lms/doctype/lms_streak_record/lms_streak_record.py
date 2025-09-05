@@ -244,6 +244,19 @@ def get_user_streak(user=None):
 	
 	return streak_record
 
+
+@frappe.whitelist()
+def get_user_streak_data(user=None):
+	"""Compatibility alias matching PRD naming."""
+	return get_user_streak(user)
+
+
+@frappe.whitelist()
+def get_streak_calendar(user=None, month=None, year=None):
+	"""Return activity calendar; if month/year provided, return 1-month window."""
+	months = 1 if (month and year) else 3
+	return get_user_activity_calendar(user=user, months=months)
+
 @frappe.whitelist()
 def record_learning_activity(user=None, activity_type="general", activity_data=None):
 	"""Record a learning activity for streak tracking"""

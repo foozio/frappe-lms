@@ -248,46 +248,24 @@ def create_streak_record(user, streak_count):
 		frappe.log_error(f"Error creating streak record: {str(e)}")
 
 def update_user_leaderboard_entry(user):
-	"""Update user's leaderboard entry"""
+	"""Update user's leaderboard entries using the canonical utils helpers."""
 	try:
-		user_doc = frappe.get_doc("User", user)
-		
-		# Update daily leaderboard
-		update_leaderboard_entry(user, "daily", user_doc.total_points, user_doc.current_streak)
-		update_leaderboard_entry(user, "weekly", user_doc.total_points, user_doc.current_streak)
-		update_leaderboard_entry(user, "monthly", user_doc.total_points, user_doc.current_streak)
-		update_leaderboard_entry(user, "all_time", user_doc.total_points, user_doc.current_streak)
-		
+		from lms.lms.utils import update_user_leaderboard_position
+		# Global points leaderboard
+		update_user_leaderboard_position(user, leaderboard_type="global")
+		# Streak leaderboard
+		update_user_leaderboard_position(user, leaderboard_type="streak")
 	except Exception as e:
 		frappe.log_error(f"Error updating leaderboard entry: {str(e)}")
 
 def update_leaderboard_entry(user, period, total_points, current_streak):
-	"""Update specific leaderboard entry"""
+	"""Compatibility shim: delegate to global leaderboard update."""
 	try:
-		existing = frappe.db.exists("LMS Leaderboard Entry", {
-			"user": user,
-			"period": period
-		})
-		
-		if existing:
-			entry = frappe.get_doc("LMS Leaderboard Entry", existing)
-			entry.total_points = total_points
-			entry.current_streak = current_streak
-			entry.last_updated = now_datetime()
-			entry.save(ignore_permissions=True)
-		else:
-			entry = frappe.get_doc({
-				"doctype": "LMS Leaderboard Entry",
-				"user": user,
-				"period": period,
-				"total_points": total_points,
-				"current_streak": current_streak,
-				"last_updated": now_datetime()
-			})
-			entry.insert(ignore_permissions=True)
-			
+		from lms.lms.utils import update_user_leaderboard_position
+		update_user_leaderboard_position(user, leaderboard_type="global")
+		update_user_leaderboard_position(user, leaderboard_type="streak")
 	except Exception as e:
-		frappe.log_error(f"Error updating leaderboard entry for {period}: {str(e)}")
+		frappe.log_error(f"Error updating leaderboard entry (shim): {str(e)}")
 
 def award_achievement(user, achievement_key, achievement_title):
 	"""Award achievement to user"""
@@ -349,25 +327,11 @@ def check_course_completion(user, course):
 
 # Scheduled Tasks
 def update_leaderboards():
-	"""Update leaderboard rankings (hourly)"""
+	"""Update leaderboard rankings using current schema (hourly)."""
 	try:
-		periods = ["daily", "weekly", "monthly", "all_time"]
-		
-		for period in periods:
-			# Get all entries for this period, ordered by points
-			entries = frappe.get_all(
-				"LMS Leaderboard Entry",
-				filters={"period": period},
-				fields=["name", "user", "total_points"],
-				order_by="total_points desc"
-			)
-			
-			# Update rankings
-			for idx, entry in enumerate(entries, 1):
-				frappe.db.set_value("LMS Leaderboard Entry", entry.name, "rank", idx)
-			
-		frappe.db.commit()
-		
+		from lms.lms.utils import recalculate_leaderboard_rankings
+		recalculate_leaderboard_rankings(leaderboard_type="global")
+		recalculate_leaderboard_rankings(leaderboard_type="streak")
 	except Exception as e:
 		frappe.log_error(f"Error updating leaderboards: {str(e)}")
 
